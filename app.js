@@ -71,6 +71,8 @@ app.get('/add_newscatcher_key', async (req, res) => {
         }
 
         await dbCollection.insertOne(record)
+
+        res.send("API Key added")
     } catch {
         res.send("Error caught")
     }
