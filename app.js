@@ -175,10 +175,10 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
             link: article.link,
             summary: article.summary
         }
-        articles.append(newArticle)
+        articles.push(newArticle)
     })
 
-    await refreshCacheRecord("processedKeyword", data, keyword)
+    await refreshCacheRecord("processedKeyword", articles, keyword)
 
     return articles.slice(0,3);
 }
@@ -205,10 +205,12 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
             link: article.link,
             summary: article.summary
         }
-        articles.append(newArticle)
+        articles.push(newArticle)
     })
 
-    await refreshCacheRecord("processedCategory", data, category)
+    console.log(articles)
+
+    await refreshCacheRecord("processedCategory", articles, category)
 
     return articles.slice(0,3);
 }
@@ -217,19 +219,23 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
 async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "US") {
     let result = {}
 
-    valid_categories.forEach((category) => {
+    for (const category of valid_categories) {
         if (input[category]) {
-            result[category] = getNewsDataCategory(category, cacheTime, lang, country)
+            result[category] = await getNewsDataCategory(category, cacheTime, lang, country)
         }
-    })
+    }
+
+    console.log(result)
 
     const kwOptions = ["location", "interest1", "interest2", "interest3"]
 
-    kwOptions.forEach((option) => {
+    for (const option of kwOptions) {
         if (input[option] !== "") {
-            result[option] = getNewsDataKeyword(option, cacheTime, lang, country)
+            result[option] = await getNewsDataKeyword(input[option], cacheTime, lang, country)
         }
-    })
+    }
+
+    console.log(result)
 
     return result
 }
