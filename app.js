@@ -349,9 +349,23 @@ app.get('/category_test', async (req, res) => {
 
 app.use(express.json());
 app.post('/generate_feed', async (req, res) => {
-    // TODO: Email logic
+    // Check if email field exists
+
     try {
-        res.json(await getNewsDataForApi(req.body))
+        const data = await getNewsDataForApi(req.body)
+
+        res.json(data)
+
+        if (req.body.email !== "") {
+            const emailFormat = /^[a-zA-Z0-9_.+]+(?<!^[0-9]*)@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+            if (req.body.email.match((emailFormat))) {
+                try {
+                    // TODO: Call email function
+                } catch (error) {
+                    console.log("Error in email send: " + error)
+                }
+            }
+        }
     } catch {
         res.json({})
     }
