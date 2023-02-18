@@ -22,9 +22,9 @@ const client = new MongoClient(uri);
 async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", country = "US") {
     // Check exist in cache
     const database = client.db('cache');
-    const kwcollection = database.collection('keyword');
+    const kwCollection = database.collection('keyword');
     const query = {keyword: keyword};
-    const cached = await kwcollection.findOne(query);
+    const cached = await kwCollection.findOne(query);
     if (cached !== null) {
         const hour = 1000 * 60 * 60;
         const cacheValidInterval = Date.now() - hour * cacheTime;
@@ -32,11 +32,13 @@ async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", countr
             return cached.data;
         }
     }
-    await kwcollection.deleteOne(query);
+    await kwCollection.deleteOne(query);
 
     // Make newscatcher API query
 
+    let response;
 
+    // TODO: mongo API key rotating
     const options = {
         method: 'GET',
         url: 'https://api.newscatcherapi.com/v2/search',
@@ -45,9 +47,9 @@ async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", countr
             lang: lang,
             sort_by: 'relevancy',
             page: '1',
-            from: '1 day ago',
             page_size: 100,
-            countries: [country]
+            countries: country,
+            from: '1 day ago'
         },
         headers: {
             'x-api-key': process.env.NEWSCATCHER_KEY
@@ -55,24 +57,88 @@ async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", countr
     };
 
     // TODO: error handling
-    const response = await axios.request(options)
+    try {
+        response = await axios.request(options)
+    } catch (error) {
+        console.log("Request error: " + error)
+        return
+    }
 
     const data = response.data
 
     // Add to cache
     const record = {
-        keyword : keyword,
-        date : Date.now(),
-        data : data,
+        keyword: keyword,
+        date: Date.now(),
+        data: data,
     }
 
-    await kwcollection.insertOne(record);
+    await kwCollection.insertOne(record);
 
     return data;
 }
 
-function newscatcherGetCategory(category, cacheTime = 4) {
+const valid_categories = ["news", "sport", "tech", "world", "finance", "politics", "business", "economics", "entertainment", "beauty", "travel", "music", "food", "science", "gaming" , "energy"]
 
+async function newscatcherGetCategory(category, cacheTime = 4, lang = "en", country = "US") {
+    if (!valid_categories.includes(category)) {
+        return "Invalid Input";
+    }
+    // Check exist in cache
+    const database = client.db('cache');
+    const cCollection = database.collection('category');
+    const query = {category: category};
+    const cached = await cCollection.findOne(query);
+    if (cached !== null) {
+        const hour = 1000 * 60 * 60;
+        const cacheValidInterval = Date.now() - hour * cacheTime;
+        if (cached.date > cacheValidInterval) {
+            return cached.data;
+        }
+    }
+    await cCollection.deleteOne(query);
+
+    // Make newscatcher API query
+
+    let response;
+
+    // TODO: mongo API key rotating
+    const options = {
+        method: 'GET',
+        url: 'https://api.newscatcherapi.com/v2/latest_headlines',
+        params: {
+            topic: category,
+            lang: lang,
+            page: '1',
+            page_size: 100,
+            countries: country,
+            when: '24h',
+        },
+        headers: {
+            'x-api-key': process.env.NEWSCATCHER_KEY
+        }
+    };
+
+    // TODO: error handling
+    try {
+        response = await axios.request(options)
+    } catch (error) {
+        console.log("Request error: " + error)
+        return
+    }
+
+    const data = response.data
+
+    // Add to cache
+    const record = {
+        category: category,
+        date: Date.now(),
+        data: data,
+    }
+
+    await cCollection.insertOne(record);
+
+    return data;
 }
 
 app.get('/', async (req, res) => {
@@ -91,6 +157,13 @@ function getNewsData() {
 app.get('/newscatcher_test', async (req, res) => {
     keyword = req.query.keyword
     data = await newscatcherGetKeyword(keyword)
+    res.send(data);
+})
+
+app.get('/category_test', async (req, res) => {
+    category = req.query.category
+    console.log(category)
+    data = await newscatcherGetCategory(category)
     res.send(data);
 })
 
