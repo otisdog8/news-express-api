@@ -215,12 +215,15 @@ app.get('/', async (req, res) => {
 })
 
 // Openai setup thing
+/*
 const {Configuration, OpenAIApi} = require("openai");
 
 const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
+
+ */
 
 // Function to get a subcomponent of newsletter
 async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country = "US") {
@@ -234,6 +237,7 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     const newscatcherData = await newscatcherGetKeyword(keyword, cacheTime, lang, country);
 
     // Collect a list of articles to group:
+    /*
     prompt = ""
     cnt = 1
     newscatcherData.articles.forEach((article) => {
@@ -251,6 +255,8 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     completion.split('\n').forEach((str) => {
         str.spli
     })
+
+     */
 
     // Format nicely and return
     let articles = [];
