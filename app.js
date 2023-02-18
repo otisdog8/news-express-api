@@ -208,8 +208,6 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
         articles.push(newArticle)
     })
 
-    console.log(articles)
-
     await refreshCacheRecord("processedCategory", articles, category)
 
     return articles.slice(0,3);
@@ -225,8 +223,6 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
         }
     }
 
-    console.log(result)
-
     const kwOptions = ["location", "interest1", "interest2", "interest3"]
 
     for (const option of kwOptions) {
@@ -234,8 +230,6 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
             result[option] = await getNewsDataKeyword(input[option], cacheTime, lang, country)
         }
     }
-
-    console.log(result)
 
     return result
 }
@@ -254,7 +248,6 @@ app.get('/category_test', async (req, res) => {
 
 app.use(express.json());
 app.post('/generate_feed', async (req, res) => {
-    console.log("Running")
     res.json(await getNewsDataForApi(req.body))
 })
 
