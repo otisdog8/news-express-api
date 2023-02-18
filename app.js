@@ -227,15 +227,15 @@ const openai = new OpenAIApi(configuration);
  */
 
 // Function to get a subcomponent of newsletter
-async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country = "US") {
+async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country = "US", ncCacheTime = 4) {
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedKeyword", cacheTime, keyword)
     if (cachedItem !== null) {
-        //return cachedItem.slice(0, 3)
+        return cachedItem.slice(0, 3)
     }
 
     // Newscatcher API
-    const newscatcherData = await newscatcherGetKeyword(keyword, cacheTime, lang, country);
+    const newscatcherData = await newscatcherGetKeyword(keyword, ncCacheTime, lang, country);
 
     // Collect a list of articles to group:
     /*
@@ -275,7 +275,7 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     return articles.slice(0, 3);
 }
 
-async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country = "US") {
+async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country = "US", ncCacheTime = 4) {
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedCategory", cacheTime, category)
     if (cachedItem !== null) {
@@ -283,8 +283,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     }
 
     // Newscatcher API
-    // TODO: Issue is here
-    const newscatcherData = await newscatcherGetCategory(category, cacheTime, lang, country);
+    const newscatcherData = await newscatcherGetCategory(category, ncCacheTime, lang, country);
 
     // GPT3 processing
     // TODO: GPT Processing Pipelineu
@@ -318,8 +317,6 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
             result[option] = await getNewsDataKeyword(input[option], cacheTime, lang, country)
         }
     }
-
-    // TODO: fix glitch where category searches are being cached in the keyword (maybe being searched with keyword mechanism too)
 
     for (const category of valid_categories) {
         if (input[category]) {
