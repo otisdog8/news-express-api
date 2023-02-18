@@ -284,9 +284,10 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
 
     // Newscatcher API
     // TODO: Issue is here
-    const newscatcherData = await newscatcherGetKeyword(category, cacheTime, lang, country);
+    const newscatcherData = await newscatcherGetCategory(category, cacheTime, lang, country);
 
     // GPT3 processing
+    // TODO: GPT Processing Pipelineu
 
     // Format nicely and return
 
