@@ -214,6 +214,7 @@ app.get('/', async (req, res) => {
     res.send('Hello World!')
 })
 
+// TODO: OpenAI Processing pipeline
 // Openai setup thing
 /*
 const {Configuration, OpenAIApi} = require("openai");
@@ -282,6 +283,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     }
 
     // Newscatcher API
+    // TODO: Issue is here
     const newscatcherData = await newscatcherGetKeyword(category, cacheTime, lang, country);
 
     // GPT3 processing
@@ -316,6 +318,8 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
         }
     }
 
+    // TODO: fix glitch where category searches are being cached in the keyword (maybe being searched with keyword mechanism too)
+
     for (const category of valid_categories) {
         if (input[category]) {
             result[category] = await getNewsDataCategory(category, cacheTime, lang, country)
@@ -349,6 +353,7 @@ app.get('/category_test', async (req, res) => {
 
 app.use(express.json());
 app.post('/generate_feed', async (req, res) => {
+    // TODO: Email logic
     try {
         res.json(await getNewsDataForApi(req.body))
     } catch {
