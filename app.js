@@ -246,10 +246,9 @@ app.get('/category_test', async (req, res) => {
     res.json(data);
 })
 
-const bodyParser = require('body-parser');
-
-app.use(bodyParser.json());
-app.post('generate_feed', async (req, res) => {
+app.use(express.json());
+app.post('/generate_feed', async (req, res) => {
+    console.log("Running")
     res.json(await getNewsDataForApi(req.body))
 })
 
