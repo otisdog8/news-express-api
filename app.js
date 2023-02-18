@@ -111,7 +111,7 @@ async function generateOptions(type, lang, country, data) {
     }
     lastCheck = Date.now() + 1000
     // Get rotated API key
-    const key = getAPIKey();
+    const key = await getAPIKey();
 
     if (type === "keyword") {
         const options = {
@@ -161,7 +161,6 @@ async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", countr
 
     // Make newscatcher API query
     let response;
-
     const options = generateOptions("keyword", lang, country, keyword)
 
     // TODO: error handling
@@ -195,7 +194,8 @@ async function newscatcherGetCategory(category, cacheTime = 4, lang = "en", coun
     // Make newscatcher API query
     let response;
 
-    const options = generateOptions("category", lang, country, category)
+    const options = await generateOptions("category", lang, country, category)
+    console.log(options)
 
     // TODO: error handling
     try {
