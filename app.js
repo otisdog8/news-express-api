@@ -58,6 +58,24 @@ async function refreshCacheRecord(collection, data, item) {
     await dbCollection.insertOne(record);
 }
 
+let lastCheck = Date.now();
+
+async function getAPIKey() {
+    return process.env.NEWSCATCHER_KEY;
+}
+
+async function generateOptions(type, lang, country, data) {
+    // 1 second lag time
+    while (Date.now() < lastCheck) {
+        await new Promise(r => setTimeout(r, 1000));
+    }
+    lastCheck = Date.now() + 1000
+
+    // Get rotated API key
+
+
+}
+
 async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", country = "US") {
     // Check exist in cache
     const cachedItem = await getCachedRecord("keyword", cacheTime, keyword)
@@ -159,7 +177,7 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedKeyword", cacheTime, keyword)
     if (cachedItem !== null) {
-        return cachedItem.slice(0,3)
+        return cachedItem.slice(0, 3)
     }
 
     // Newscatcher API
@@ -180,14 +198,14 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
 
     await refreshCacheRecord("processedKeyword", articles, keyword)
 
-    return articles.slice(0,3);
+    return articles.slice(0, 3);
 }
 
 async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country = "US") {
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedCategory", cacheTime, category)
     if (cachedItem !== null) {
-        return cachedItem.slice(0,3)
+        return cachedItem.slice(0, 3)
     }
 
     // Newscatcher API
@@ -210,7 +228,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
 
     await refreshCacheRecord("processedCategory", articles, category)
 
-    return articles.slice(0,3);
+    return articles.slice(0, 3);
 }
 
 // Function to get full newsletter stuff
@@ -235,20 +253,34 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
 }
 
 app.get('/keyword_test', async (req, res) => {
-    keyword = req.query.keyword
-    data = await newscatcherGetKeyword(keyword)
-    res.json(data);
+    try {
+        keyword = req.query.keyword
+        data = await newscatcherGetKeyword(keyword)
+        res.json(data);
+    } catch {
+        res.json({})
+    }
+
 })
 
 app.get('/category_test', async (req, res) => {
-    category = req.query.category
-    data = await newscatcherGetCategory(category)
-    res.json(data);
+    try {
+        category = req.query.category
+        data = await newscatcherGetCategory(category)
+        res.json(data);
+    } catch {
+        res.json({})
+    }
+
 })
 
 app.use(express.json());
 app.post('/generate_feed', async (req, res) => {
-    res.json(await getNewsDataForApi(req.body))
+    try {
+        res.json(await getNewsDataForApi(req.body))
+    } catch {
+        res.json({})
+    }
 })
 
 app.listen(port, () => {
