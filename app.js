@@ -237,20 +237,20 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
 app.get('/keyword_test', async (req, res) => {
     keyword = req.query.keyword
     data = await newscatcherGetKeyword(keyword)
-    res.send(data);
+    res.json(data);
 })
 
 app.get('/category_test', async (req, res) => {
     category = req.query.category
     data = await newscatcherGetCategory(category)
-    res.send(data);
+    res.json(data);
 })
 
 const bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
 app.post('generate_feed', async (req, res) => {
-    res.send(await getNewsDataForApi(req.body))
+    res.json(await getNewsDataForApi(req.body))
 })
 
 app.listen(port, () => {
