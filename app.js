@@ -155,7 +155,7 @@ app.get('/', async (req, res) => {
 
 
 // Function to get a subcomponent of newsletter
-async function getNewsDataKeyword(keyword, cacheTime=4, lang="en", country="US") {
+async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country = "US") {
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedKeyword", cacheTime, keyword)
     if (cachedItem !== null) {
@@ -168,13 +168,22 @@ async function getNewsDataKeyword(keyword, cacheTime=4, lang="en", country="US")
     // GPT3 processing
 
     // Format nicely and return
+    let articles = [];
+    newscatcherData.articles.forEach((article) => {
+        let newArticle = {
+            title: article.title,
+            link: article.link,
+            summary: article.summary
+        }
+        articles.append(newArticle)
+    })
 
     await refreshCacheRecord("processedKeyword", data, keyword)
 
-    return data;
+    return articles.slice(0,3);
 }
 
-async function getNewsDataCategory(category, cacheTime=4, lang="en", country="US") {
+async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country = "US") {
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedCategory", cacheTime, category)
     if (cachedItem !== null) {
@@ -189,17 +198,43 @@ async function getNewsDataCategory(category, cacheTime=4, lang="en", country="US
     // Format nicely and return
 
 
+    let articles = [];
+    newscatcherData.articles.forEach((article) => {
+        let newArticle = {
+            title: article.title,
+            link: article.link,
+            summary: article.summary
+        }
+        articles.append(newArticle)
+    })
+
     await refreshCacheRecord("processedCategory", data, category)
 
-    return data;
+    return articles.slice(0,3);
 }
 
 // Function to get full newsletter stuff
-async function getNewsDataForApi(input, cacheTime=4, lang="en", country="US") {
+async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "US") {
+    let result = {}
 
+    valid_categories.forEach((category) => {
+        if (input[category]) {
+            result[category] = getNewsDataCategory(category, cacheTime, lang, country)
+        }
+    })
+
+    const kwOptions = ["location", "interest1", "interest2", "interest3"]
+
+    kwOptions.forEach((option) => {
+        if (input[option] !== "") {
+            result[option] = getNewsDataKeyword(option, cacheTime, lang, country)
+        }
+    })
+
+    return result
 }
 
-app.get('/newscatcher_test', async (req, res) => {
+app.get('/keyword_test', async (req, res) => {
     keyword = req.query.keyword
     data = await newscatcherGetKeyword(keyword)
     res.send(data);
@@ -209,6 +244,13 @@ app.get('/category_test', async (req, res) => {
     category = req.query.category
     data = await newscatcherGetCategory(category)
     res.send(data);
+})
+
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.json());
+app.post('generate_feed', async (req, res) => {
+    res.send(await getNewsDataForApi(body))
 })
 
 app.listen(port, () => {
