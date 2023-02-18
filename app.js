@@ -250,7 +250,7 @@ const bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
 app.post('generate_feed', async (req, res) => {
-    res.send(await getNewsDataForApi(body))
+    res.send(await getNewsDataForApi(req.body))
 })
 
 app.listen(port, () => {
