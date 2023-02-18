@@ -144,13 +144,14 @@ async function generateOptions(type, lang, country, data) {
                 when: '24h',
             },
             headers: {
-                'x-api-key': process.env.NEWSCATCHER_KEY
+                'x-api-key': key,
             }
         }
         return options;
     }
 
 }
+
 
 async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", country = "US") {
     // Check exist in cache
@@ -161,9 +162,8 @@ async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", countr
 
     // Make newscatcher API query
     let response;
-    const options = generateOptions("keyword", lang, country, keyword)
+    const options = await generateOptions("keyword", lang, country, keyword)
 
-    // TODO: error handling
     try {
         response = await axios.request(options)
     } catch (error) {
@@ -195,9 +195,7 @@ async function newscatcherGetCategory(category, cacheTime = 4, lang = "en", coun
     let response;
 
     const options = await generateOptions("category", lang, country, category)
-    console.log(options)
 
-    // TODO: error handling
     try {
         response = await axios.request(options)
     } catch (error) {
@@ -216,19 +214,43 @@ app.get('/', async (req, res) => {
     res.send('Hello World!')
 })
 
+// Openai setup thing
+const {Configuration, OpenAIApi} = require("openai");
+
+const configuration = new Configuration({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
 
 // Function to get a subcomponent of newsletter
 async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country = "US") {
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedKeyword", cacheTime, keyword)
     if (cachedItem !== null) {
-        return cachedItem.slice(0, 3)
+        //return cachedItem.slice(0, 3)
     }
 
     // Newscatcher API
     const newscatcherData = await newscatcherGetKeyword(keyword, cacheTime, lang, country);
 
+    // Collect a list of articles to group:
+    prompt = ""
+    cnt = 1
+    newscatcherData.articles.forEach((article) => {
+        prompt += cnt.toString() + ": " + article.title + "\n"
+        cnt += 1;
+    })
+
+    prompt += "Above is a list of articles. Select the 3-5 most relevant articles, highlighting current events that would be interesting to a local. Do not include duplicates or articles that likely refer to the same event:\n"
     // GPT3 processing
+    const completion = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: prompt,
+    });
+
+    completion.split('\n').forEach((str) => {
+        str.spli
+    })
 
     // Format nicely and return
     let articles = [];
@@ -280,17 +302,17 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
 async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "US") {
     let result = {}
 
-    for (const category of valid_categories) {
-        if (input[category]) {
-            result[category] = await getNewsDataCategory(category, cacheTime, lang, country)
-        }
-    }
-
     const kwOptions = ["location", "interest1", "interest2", "interest3"]
 
     for (const option of kwOptions) {
         if (input[option] !== "") {
             result[option] = await getNewsDataKeyword(input[option], cacheTime, lang, country)
+        }
+    }
+
+    for (const category of valid_categories) {
+        if (input[category]) {
+            result[category] = await getNewsDataCategory(category, cacheTime, lang, country)
         }
     }
 
