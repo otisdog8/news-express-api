@@ -2,7 +2,7 @@
 require('dotenv').config()
 
 // Axios
-var axios = require("axios").default;
+let axios = require("axios").default;
 
 const express = require('express')
 const app = express()
@@ -24,7 +24,7 @@ async function getCachedRecord(collection, cacheTime, item) {
     // Check exist in cache
     const database = client.db('cache');
     const dbCollection = database.collection(collection);
-    var query = {};
+    let query = {};
     query[collection] = item
 
     const cached = await dbCollection.findOne(query);
@@ -43,7 +43,7 @@ async function refreshCacheRecord(collection, data, item) {
     const database = client.db('cache');
     const dbCollection = database.collection(collection);
 
-    var query = {};
+    let query = {};
     query[collection] = item;
 
     await dbCollection.deleteOne(query);
@@ -105,7 +105,7 @@ async function getAPIKey() {
 }
 
 async function generateOptions(type, lang, country, data) {
-    // 1 second lag time
+    // 1-second lag time
     while (Date.now() < lastCheck) {
         await new Promise(r => setTimeout(r, 1000));
     }
@@ -114,7 +114,7 @@ async function generateOptions(type, lang, country, data) {
     const key = await getAPIKey();
 
     if (type === "keyword") {
-        const options = {
+        return {
             method: 'GET',
             url: 'https://api.newscatcherapi.com/v2/search',
             params: {
@@ -130,9 +130,8 @@ async function generateOptions(type, lang, country, data) {
                 'x-api-key': key,
             }
         };
-        return options;
     } else if (type === "category") {
-        const options = {
+        return {
             method: 'GET',
             url: 'https://api.newscatcherapi.com/v2/latest_headlines',
             params: {
@@ -146,8 +145,7 @@ async function generateOptions(type, lang, country, data) {
             headers: {
                 'x-api-key': key,
             }
-        }
-        return options;
+        };
     }
 
 }
@@ -254,7 +252,7 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     });
 
     completion.split('\n').forEach((str) => {
-        str.spli
+        str.split
     })
 
      */
@@ -286,7 +284,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     const newscatcherData = await newscatcherGetCategory(category, ncCacheTime, lang, country);
 
     // GPT3 processing
-    // TODO: GPT Processing Pipelineu
+    // TODO: GPT Processing Pipeline
 
     // Format nicely and return
 
@@ -329,8 +327,8 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
 
 app.get('/keyword_test', async (req, res) => {
     try {
-        keyword = req.query.keyword
-        data = await newscatcherGetKeyword(keyword)
+        let keyword = req.query.keyword
+        let data = await newscatcherGetKeyword(keyword)
         res.json(data);
     } catch {
         res.json({})
@@ -340,8 +338,8 @@ app.get('/keyword_test', async (req, res) => {
 
 app.get('/category_test', async (req, res) => {
     try {
-        category = req.query.category
-        data = await newscatcherGetCategory(category)
+        let category = req.query.category
+        let data = await newscatcherGetCategory(category)
         res.json(data);
     } catch {
         res.json({})
