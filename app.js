@@ -26,6 +26,7 @@ async function getCachedRecord(collection, cacheTime, item) {
     const dbCollection = database.collection(collection);
     var query = {};
     query[collection] = item
+
     const cached = await dbCollection.findOne(query);
     if (cached !== null) {
         const hour = 1000 * 60 * 60;
@@ -60,8 +61,47 @@ async function refreshCacheRecord(collection, data, item) {
 
 let lastCheck = Date.now();
 
+app.get('/add_newscatcher_key', async (req, res) => {
+    try {
+        let key = req.query.key
+        let limit = req.query.limit
+        // Save key with limit to mongodb
+        const database = client.db('apikeyrotate');
+        const dbCollection = database.collection("newscatcher");
+        const record = {
+            key: key,
+            limit: parseInt(limit),
+        }
+
+        await dbCollection.insertOne(record)
+    } catch {
+        res.send("Error caught")
+    }
+})
+
+
 async function getAPIKey() {
-    return process.env.NEWSCATCHER_KEY;
+    const database = client.db('apikeyrotate');
+    const dbCollection = database.collection("newscatcher");
+
+    const record = await dbCollection.findOne()
+
+    if (record == null) {
+        return process.env.NEWSCATCHER_KEY;
+    }
+
+    await dbCollection.deleteOne(record)
+
+    if (record.limit === 1) {
+        return record.key;
+    } else {
+        const newRecord = {
+            key: record.key,
+            limit: record.limit - 1,
+        }
+        await dbCollection.insertOne(newRecord);
+        return record.key;
+    }
 }
 
 async function generateOptions(type, lang, country, data) {
@@ -70,9 +110,45 @@ async function generateOptions(type, lang, country, data) {
         await new Promise(r => setTimeout(r, 1000));
     }
     lastCheck = Date.now() + 1000
-
     // Get rotated API key
+    const key = getAPIKey();
 
+    if (type === "keyword") {
+        const options = {
+            method: 'GET',
+            url: 'https://api.newscatcherapi.com/v2/search',
+            params: {
+                q: data,
+                lang: lang,
+                sort_by: 'relevancy',
+                page: '1',
+                page_size: 100,
+                countries: country,
+                from: '1 day ago'
+            },
+            headers: {
+                'x-api-key': key,
+            }
+        };
+        return options;
+    } else if (type === "category") {
+        const options = {
+            method: 'GET',
+            url: 'https://api.newscatcherapi.com/v2/latest_headlines',
+            params: {
+                topic: data,
+                lang: lang,
+                page: '1',
+                page_size: 100,
+                countries: country,
+                when: '24h',
+            },
+            headers: {
+                'x-api-key': process.env.NEWSCATCHER_KEY
+            }
+        }
+        return options;
+    }
 
 }
 
@@ -86,23 +162,7 @@ async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", countr
     // Make newscatcher API query
     let response;
 
-    // TODO: mongo API key rotating
-    const options = {
-        method: 'GET',
-        url: 'https://api.newscatcherapi.com/v2/search',
-        params: {
-            q: keyword,
-            lang: lang,
-            sort_by: 'relevancy',
-            page: '1',
-            page_size: 100,
-            countries: country,
-            from: '1 day ago'
-        },
-        headers: {
-            'x-api-key': process.env.NEWSCATCHER_KEY
-        }
-    };
+    const options = generateOptions("keyword", lang, country, keyword)
 
     // TODO: error handling
     try {
@@ -135,22 +195,7 @@ async function newscatcherGetCategory(category, cacheTime = 4, lang = "en", coun
     // Make newscatcher API query
     let response;
 
-    // TODO: mongo API key rotating
-    const options = {
-        method: 'GET',
-        url: 'https://api.newscatcherapi.com/v2/latest_headlines',
-        params: {
-            topic: category,
-            lang: lang,
-            page: '1',
-            page_size: 100,
-            countries: country,
-            when: '24h',
-        },
-        headers: {
-            'x-api-key': process.env.NEWSCATCHER_KEY
-        }
-    };
+    const options = generateOptions("category", lang, country, category)
 
     // TODO: error handling
     try {
@@ -282,6 +327,7 @@ app.post('/generate_feed', async (req, res) => {
         res.json({})
     }
 })
+
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
