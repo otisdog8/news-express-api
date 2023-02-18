@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/otisdog8/news-express-api#readme",
   "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
     "axios": "^1.3.3",
     "body-parser": "^1.20.1",
     "dotenv": "^16.0.3",

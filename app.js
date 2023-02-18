@@ -13,8 +13,7 @@ password = process.env.MONGODB_PASS
 clusterUrl = process.env.MONGODB_URL
 
 // Get uri for mongodb
-const uri =
-    `mongodb+srv://${user}:${password}@${clusterUrl}?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${user}:${password}@${clusterUrl}?retryWrites=true&w=majority`;
 
 const {MongoClient} = require("mongodb");
 const client = new MongoClient(uri);
@@ -50,8 +49,7 @@ async function refreshCacheRecord(collection, data, item) {
 
     // Add to cache
     let record = {
-        date: Date.now(),
-        data: data,
+        date: Date.now(), data: data,
     }
 
     record[collection] = item;
@@ -69,8 +67,7 @@ app.get('/add_newscatcher_key', async (req, res) => {
         const database = client.db('apikeyrotate');
         const dbCollection = database.collection("newscatcher");
         const record = {
-            key: key,
-            limit: parseInt(limit),
+            key: key, limit: parseInt(limit),
         }
 
         await dbCollection.insertOne(record)
@@ -96,8 +93,7 @@ async function getAPIKey() {
         return record.key;
     } else {
         const newRecord = {
-            key: record.key,
-            limit: record.limit - 1,
+            key: record.key, limit: record.limit - 1,
         }
         await dbCollection.insertOne(newRecord);
         return record.key;
@@ -115,9 +111,7 @@ async function generateOptions(type, lang, country, data) {
 
     if (type === "keyword") {
         return {
-            method: 'GET',
-            url: 'https://api.newscatcherapi.com/v2/search',
-            params: {
+            method: 'GET', url: 'https://api.newscatcherapi.com/v2/search', params: {
                 q: data,
                 lang: lang,
                 sort_by: 'relevancy',
@@ -125,24 +119,15 @@ async function generateOptions(type, lang, country, data) {
                 page_size: 100,
                 countries: country,
                 from: '1 day ago'
-            },
-            headers: {
+            }, headers: {
                 'x-api-key': key,
             }
         };
     } else if (type === "category") {
         return {
-            method: 'GET',
-            url: 'https://api.newscatcherapi.com/v2/latest_headlines',
-            params: {
-                topic: data,
-                lang: lang,
-                page: '1',
-                page_size: 100,
-                countries: country,
-                when: '24h',
-            },
-            headers: {
+            method: 'GET', url: 'https://api.newscatcherapi.com/v2/latest_headlines', params: {
+                topic: data, lang: lang, page: '1', page_size: 100, countries: country, when: '24h',
+            }, headers: {
                 'x-api-key': key,
             }
         };
@@ -236,6 +221,9 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     const newscatcherData = await newscatcherGetKeyword(keyword, ncCacheTime, lang, country);
 
     // Collect a list of articles to group:
+    // TODO: trim to 50
+
+
     /*
     prompt = ""
     cnt = 1
@@ -261,9 +249,7 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     let articles = [];
     newscatcherData.articles.forEach((article) => {
         let newArticle = {
-            title: article.title,
-            link: article.link,
-            summary: article.summary
+            title: article.title, link: article.link, summary: article.summary
         }
         articles.push(newArticle)
     })
@@ -292,9 +278,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     let articles = [];
     newscatcherData.articles.forEach((article) => {
         let newArticle = {
-            title: article.title,
-            link: article.link,
-            summary: article.summary
+            title: article.title, link: article.link, summary: article.summary
         }
         articles.push(newArticle)
     })
@@ -312,7 +296,7 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
 
     for (const option of kwOptions) {
         if (input[option] !== "") {
-            result[option] = await getNewsDataKeyword(input[option], cacheTime, lang, country)
+            result[input[option]] = await getNewsDataKeyword(input[option], cacheTime, lang, country)
         }
     }
 
@@ -325,6 +309,90 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
     return result
 }
 
+// Create mail API stuff
+const MailToBeSent = require('@sendgrid/mail')
+
+const API_KEY = process.env.TWILIO_KEY;
+
+MailToBeSent.setApiKey(API_KEY)
+
+// Function to send email
+async function sendMail(email, html) {
+    const mail = {
+        to: email, from: 'hack@rooty.dev', subject: 'Hello from Hacks', text: 'Your weekly news feed', html: html,
+    };
+
+    try {
+        await MailToBeSent.send(mail)
+    } catch (error) {
+        console.log("Email sending error: " + error)
+    }
+}
+
+async function sendFormatted(email, data) {
+    // TODO: Implement conveting the data to html
+
+}
+
+// Send the email for a particular user if it works
+async function sendOne(email) {
+    const database = client.db('email');
+    const dbCollection = database.collection('users');
+    const filter = {
+        email: email
+    }
+    const data = await dbCollection.findOne(filter)
+    const feed = await getNewsDataForApi(data)
+    await sendFormatted(email, feed)
+}
+
+// Send the email for all users
+async function sendAll() {
+    const database = client.db('email');
+    const dbCollection = database.collection('users');
+    const users = await dbCollection.find()
+    let userArr = [];
+    await users.forEach((user) => {
+        userArr.push(user)
+
+    })
+    for (let i = 0; i < userArr.length; i++) {
+        const user = userArr[i]
+        const feed = await getNewsDataForApi(user)
+        await sendFormatted(user.email, feed)
+    }
+
+}
+
+// Handle sending periodically
+async function handleSendingPeriodically() {
+
+}
+
+//takes in the user's email, interests from the JSON, store that information in the mongoDB, then generate for immediate use and recurring use
+async function handleEmailInterests(data) {
+    const database = client.db('email');
+    const dbCollection = database.collection('users');
+    const filter = {
+        email: data.email
+    }
+    await dbCollection.updateOne(filter, data, {
+        upsert: true
+    })
+
+
+}
+
+// Stores email-associated interest data
+
+// Unsubscribe
+async function unsubscribe(email) {
+    const database = client.db('email');
+    const dbCollection = database.collection('users');
+}
+
+
+// TODO: Subscribe link and unsubscribe
 app.get('/keyword_test', async (req, res) => {
     try {
         let keyword = req.query.keyword
@@ -360,7 +428,7 @@ app.post('/generate_feed', async (req, res) => {
             const emailFormat = /^[a-zA-Z0-9_.+]+(?<!^[0-9]*)@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
             if (req.body.email.match((emailFormat))) {
                 try {
-                    // TODO: Call email function
+                    await handleEmailInterests(req.body)
                 } catch (error) {
                     console.log("Error in email send: " + error)
                 }
