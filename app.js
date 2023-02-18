@@ -19,12 +19,14 @@ const uri =
 const {MongoClient} = require("mongodb");
 const client = new MongoClient(uri);
 
-async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", country = "US") {
+// Cache helper methods
+async function getCachedRecord(collection, cacheTime, item) {
     // Check exist in cache
     const database = client.db('cache');
-    const kwCollection = database.collection('keyword');
-    const query = {keyword: keyword};
-    const cached = await kwCollection.findOne(query);
+    const dbCollection = database.collection(collection);
+    var query = {};
+    query[collection] = item
+    const cached = await dbCollection.findOne(query);
     if (cached !== null) {
         const hour = 1000 * 60 * 60;
         const cacheValidInterval = Date.now() - hour * cacheTime;
@@ -32,10 +34,38 @@ async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", countr
             return cached.data;
         }
     }
-    await kwCollection.deleteOne(query);
+    return null;
+}
+
+
+async function refreshCacheRecord(collection, data, item) {
+    const database = client.db('cache');
+    const dbCollection = database.collection(collection);
+
+    var query = {};
+    query[collection] = item;
+
+    await dbCollection.deleteOne(query);
+
+    // Add to cache
+    let record = {
+        date: Date.now(),
+        data: data,
+    }
+
+    record[collection] = item;
+
+    await dbCollection.insertOne(record);
+}
+
+async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", country = "US") {
+    // Check exist in cache
+    const cachedItem = await getCachedRecord("keyword", cacheTime, keyword)
+    if (cachedItem !== null) {
+        return cachedItem
+    }
 
     // Make newscatcher API query
-
     let response;
 
     // TODO: mongo API key rotating
@@ -66,40 +96,25 @@ async function newscatcherGetKeyword(keyword, cacheTime = 4, lang = "en", countr
 
     const data = response.data
 
-    // Add to cache
-    const record = {
-        keyword: keyword,
-        date: Date.now(),
-        data: data,
-    }
-
-    await kwCollection.insertOne(record);
+    await refreshCacheRecord("keyword", data, keyword)
 
     return data;
 }
 
-const valid_categories = ["news", "sport", "tech", "world", "finance", "politics", "business", "economics", "entertainment", "beauty", "travel", "music", "food", "science", "gaming" , "energy"]
+const valid_categories = ["news", "sport", "tech", "world", "finance", "politics", "business", "economics", "entertainment", "beauty", "travel", "music", "food", "science", "gaming", "energy"]
 
 async function newscatcherGetCategory(category, cacheTime = 4, lang = "en", country = "US") {
     if (!valid_categories.includes(category)) {
         return "Invalid Input";
     }
+
     // Check exist in cache
-    const database = client.db('cache');
-    const cCollection = database.collection('category');
-    const query = {category: category};
-    const cached = await cCollection.findOne(query);
-    if (cached !== null) {
-        const hour = 1000 * 60 * 60;
-        const cacheValidInterval = Date.now() - hour * cacheTime;
-        if (cached.date > cacheValidInterval) {
-            return cached.data;
-        }
+    const cachedItem = await getCachedRecord("category", cacheTime, category)
+    if (cachedItem !== null) {
+        return cachedItem
     }
-    await cCollection.deleteOne(query);
 
     // Make newscatcher API query
-
     let response;
 
     // TODO: mongo API key rotating
@@ -129,14 +144,7 @@ async function newscatcherGetCategory(category, cacheTime = 4, lang = "en", coun
 
     const data = response.data
 
-    // Add to cache
-    const record = {
-        category: category,
-        date: Date.now(),
-        data: data,
-    }
-
-    await cCollection.insertOne(record);
+    await refreshCacheRecord("category", data, category)
 
     return data;
 }
@@ -147,12 +155,49 @@ app.get('/', async (req, res) => {
 
 
 // Function to get a subcomponent of newsletter
-function getNewsData() {
+async function getNewsDataKeyword(keyword, cacheTime=4, lang="en", country="US") {
+    // Check exist in cache
+    const cachedItem = await getCachedRecord("processedKeyword", cacheTime, keyword)
+    if (cachedItem !== null) {
+        return cachedItem
+    }
 
+    // Newscatcher API
+    const newscatcherData = await newscatcherGetKeyword(keyword, cacheTime, lang, country);
+
+    // GPT3 processing
+
+    // Format nicely and return
+
+    await refreshCacheRecord("processedKeyword", data, keyword)
+
+    return data;
+}
+
+async function getNewsDataCategory(category, cacheTime=4, lang="en", country="US") {
+    // Check exist in cache
+    const cachedItem = await getCachedRecord("processedCategory", cacheTime, category)
+    if (cachedItem !== null) {
+        return cachedItem
+    }
+
+    // Newscatcher API
+    const newscatcherData = await newscatcherGetKeyword(category, cacheTime, lang, country);
+
+    // GPT3 processing
+
+    // Format nicely and return
+
+
+    await refreshCacheRecord("processedCategory", data, category)
+
+    return data;
 }
 
 // Function to get full newsletter stuff
+async function getNewsDataForApi(input, cacheTime=4, lang="en", country="US") {
 
+}
 
 app.get('/newscatcher_test', async (req, res) => {
     keyword = req.query.keyword
@@ -162,7 +207,6 @@ app.get('/newscatcher_test', async (req, res) => {
 
 app.get('/category_test', async (req, res) => {
     category = req.query.category
-    console.log(category)
     data = await newscatcherGetCategory(category)
     res.send(data);
 })
