@@ -391,10 +391,24 @@ async function handleEmailInterests(data) {
 async function unsubscribe(email) {
     const database = client.db('email');
     const dbCollection = database.collection('users');
+    const filter = {
+        email: email
+    }
+
+    await dbCollection.deleteOne(filter)
+
 }
 
+app.get('/unsubscribe', async (req, res) => {
+    try {
+        await unsubscribe(req.query.email)
+        res.send("Successfully unsubscribed")
+    } catch (err) {
+        console.log("Error in unsubscribe: " + err)
+        res.send("An error occurred")
+    }
+})
 
-// TODO: Subscribe link and unsubscribe
 app.get('/keyword_test', async (req, res) => {
     try {
         let keyword = req.query.keyword
