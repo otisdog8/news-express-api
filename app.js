@@ -217,7 +217,7 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedKeyword", cacheTime, keyword)
     if (cachedItem !== null) {
-        return cachedItem
+        return cachedItem.slice(0, Math.min(3, articles.length));
     }
 
     // Newscatcher API
@@ -306,14 +306,14 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
 
     await refreshCacheRecord("processedKeyword", articles, keyword)
 
-    return articles;
+    return articles.slice(0, Math.min(3, articles.length));
 }
 
 async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country = "US", ncCacheTime = 4) {
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedCategory", cacheTime, category)
     if (cachedItem !== null) {
-        return cachedItem
+        return cachedItem.slice(0, Math.min(3, articles.length));
     }
 
     // Newscatcher API
@@ -401,7 +401,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
 
     await refreshCacheRecord("processedCategory", articles, category)
 
-    return articles.slice(0, 3);
+    return articles.slice(0, Math.min(3, articles.length));
 }
 
 // Function to get full newsletter stuff
