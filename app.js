@@ -251,6 +251,8 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
         }
     });
 
+    console.log(titles)
+
     if (titles.length === 0) {
         let articles = [];
         articleArr.slice(0, Math.min(3, articleArr.length)).forEach((article) => {
@@ -272,6 +274,8 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
             }
         }
     }
+
+    console.log(articleMatch)
 
     let articleCoroArr = []
     // Process summaries with gpt3
