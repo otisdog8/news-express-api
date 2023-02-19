@@ -254,22 +254,22 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
 
     const fuse = new Fuse(articleArr, options)
 
-    let titles = []
+    let articleMatch = []
     completion.data.choices[0].text.split('\n').forEach((str) => {
         if (str.startsWith("1") || str.startsWith("2") || str.startsWith("3")) {
             try {
                 const searchStr = str.split(":").slice(1).join(":").trim();
                 const result = fuse.search(searchStr)[0].item
-                titles.push(result)
+                articleMatch.push(result)
             } catch {
 
             }
         }
     });
 
-    console.log(titles)
+    console.log(articleMatch)
 
-    if (titles.length === 0) {
+    if (articleMatch.length === 0) {
         let articles = [];
         articleArr.slice(0, Math.min(3, articleArr.length)).forEach((article) => {
             let newArticle = {
@@ -279,19 +279,6 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
         })
         return articles;
     }
-
-    // Match to article objects
-    let articleMatch = []
-    for (const title of titles) {
-        for (let i = 0; i < articleArr.length; i++) {
-            if (articleArr[i].title.trim() === title.trim()) {
-                articleMatch.push(articleArr[i])
-                break
-            }
-        }
-    }
-
-    console.log(articleMatch)
 
     let articleCoroArr = []
     // Process summaries with gpt3
@@ -362,22 +349,22 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
 
     const fuse = new Fuse(articleArr, options)
 
-    let titles = []
+    let articleMatch = []
     completion.data.choices[0].text.split('\n').forEach((str) => {
         if (str.startsWith("1") || str.startsWith("2") || str.startsWith("3")) {
             try {
                 const searchStr = str.split(":").slice(1).join(":").trim();
                 const result = fuse.search(searchStr)[0].item
-                titles.push(result)
+                articleMatch.push(result)
             } catch {
 
             }
         }
     });
 
-    console.log(titles)
+    console.log(articleMatch)
 
-    if (titles.length === 0) {
+    if (articleMatch.length === 0) {
         let articles = [];
         articleArr.slice(0, Math.min(3, articleArr.length)).forEach((article) => {
             let newArticle = {
@@ -387,20 +374,6 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
         })
         return articles;
     }
-
-
-    // Match to article objects
-    let articleMatch = []
-    for (const title of titles) {
-        for (let i = 0; i < articleArr.length; i++) {
-            if (articleArr[i].title.trim() === title.trim()) {
-                articleMatch.push(articleArr[i])
-                break
-            }
-        }
-    }
-
-    console.log(articleMatch)
 
     let articleCoroArr = []
     // Process summaries with gpt3
