@@ -249,6 +249,17 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
         }
     });
 
+    if (titles.length === 0) {
+        let articles = [];
+        newscatcherData.articles.slice(0, Math.min(3, newscatcherData.articles.length)).forEach((article) => {
+            let newArticle = {
+                title: article.title, link: article.link, summary: article.summary
+            }
+            articles.push(newArticle)
+        })
+        return articles;
+    }
+
     // Match to article objects
     let articleMatch = []
     for (const title of titles) {
@@ -322,11 +333,21 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     // Extract titles from completion
     let titles = []
     completion.data.choices[0].text.split('\n').forEach((str) => {
-        console.log(str)
-        if (str.startsWith("1") || str.startsWith("2") || str.startsWith("3")) {
+        if (str.startsWith("1:") || str.startsWith("2:") || str.startsWith("3:")) {
             titles.push(str.split(":")[1].trim());
         }
     });
+
+    if (titles.length === 0) {
+        let articles = [];
+        newscatcherData.articles.slice(0, Math.min(3, newscatcherData.articles.length)).forEach((article) => {
+            let newArticle = {
+                title: article.title, link: article.link, summary: article.summary
+            }
+            articles.push(newArticle)
+        })
+        return articles;
+    }
 
     // Match to article objects
     let articleMatch = []
@@ -376,15 +397,28 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
 
     for (const option of kwOptions) {
         if (input[option] !== "") {
-            result[input[option]] = await getNewsDataKeyword(input[option], cacheTime, lang, country)
+            result[input[option]] = getNewsDataKeyword(input[option], cacheTime, lang, country)
         }
     }
 
     for (const category of valid_categories) {
         if (input[category]) {
-            result[category] = await getNewsDataCategory(category, cacheTime, lang, country)
+            result[category] = getNewsDataCategory(category, cacheTime, lang, country)
         }
     }
+
+    for (const option of kwOptions) {
+        if (input[option] !== "") {
+            result[input[option]] = await result[input[option]]
+        }
+    }
+
+    for (const category of valid_categories) {
+        if (input[category]) {
+            result[category] = await result[category]
+        }
+    }
+
 
     return result
 }
