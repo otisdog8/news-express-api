@@ -440,7 +440,7 @@ MailToBeSent.setApiKey(API_KEY)
 // Function to send email
 async function sendMail(email, html) {
     const mail = {
-        to: email, from: 'hack@rooty.dev', subject: 'Hello from Hacks', text: 'Your weekly news feed', html: html,
+        to: email, from: 'news@mynewswire.tech', subject: 'Hello from Hacks', text: 'Your weekly news feed', html: html,
     };
 
     try {
