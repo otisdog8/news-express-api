@@ -244,8 +244,6 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
         model: "text-davinci-003", prompt: prompt, max_tokens: 256,
     });
 
-    console.log(completion.data.choices[0])
-
     // Extract titles from completion
     const options = {
         includeScore: true,
@@ -266,8 +264,6 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
             }
         }
     });
-
-    console.log(articleMatch)
 
     if (articleMatch.length === 0) {
         let articles = [];
@@ -339,8 +335,6 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
         model: "text-davinci-003", prompt: prompt, max_tokens: 256,
     });
 
-    console.log(completion.data.choices[0])
-
     // Extract titles from completion
     const options = {
         includeScore: true,
@@ -361,8 +355,6 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
             }
         }
     });
-
-    console.log(articleMatch)
 
     if (articleMatch.length === 0) {
         let articles = [];
