@@ -1,8 +1,10 @@
 # news-express-api
 
-This is a hackathon project.
+This is the backend for our hackathon project.
 
-Check out our site: https://mynewswire.tech
+Check out our frontend: https://github.com/Arnav710/mhacks-frontend 
+
+Check out our site (might shut it down after the hackathon for money reasons): https://mynewswire.tech
 
 
 ## Inspiration
