@@ -18,6 +18,8 @@ const uri = `mongodb+srv://${user}:${password}@${clusterUrl}?retryWrites=true&w=
 const {MongoClient} = require("mongodb");
 const client = new MongoClient(uri);
 
+// TODO: After the hackathon, purposefully nerf features (caching, async paralellization), to get bullet points about numerical speedups
+
 // Cache helper methods
 async function getCachedRecord(collection, cacheTime, item) {
     // Check exist in cache
@@ -199,7 +201,6 @@ app.get('/', async (req, res) => {
     res.send('Hello World!')
 })
 
-// TODO: OpenAI Processing pipeline
 // Openai setup thing
 
 const {Configuration, OpenAIApi} = require("openai");
@@ -449,7 +450,6 @@ async function sendMail(email, html) {
 }
 
 async function sendFormatted(email, data) {
-    // TODO: Implement conveting the data to html
     let result = "";
 
     const prefix = "<div style='text-align: center; background-color: rgb(211, 211, 211);'> <div class='box' style='position: relative;background:#f8f8f8;width: 90%;max-width: 900px;padding: 2em;margin: 1.5em aut;border: 3px solid rgba(0, 0, 0, 0.08); margin:auto'><div class='newsletterContent' id='newsLetterBox'><h1 style='text-align:center; font-size:60px; tex-transform:uppercase; color:#222; letter-spacing:1px;font-family:'Playfair Display', serif; font-weight:400;'>MyNewsWire</h1><HR style='border-top: 1px dashed;'>"
@@ -521,7 +521,7 @@ async function handleSendingPeriodically() {
     }
     jobStarted = true;
     // Set the time for Eastern Time
-    const targetTime = new Date().setUTCHours(14, 0, 0, 0);
+    const targetTime = new Date().setUTCHours(19, 0, 0, 0);
 
     const delay = targetTime - Date.now();
 
