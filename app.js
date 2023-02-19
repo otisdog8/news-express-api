@@ -241,6 +241,8 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
         model: "text-davinci-003", prompt: prompt, max_tokens: 256,
     });
 
+    console.log(completion.data.choices[0])
+
     // Extract titles from completion
     let titles = []
     completion.data.choices[0].text.split('\n').forEach((str) => {
