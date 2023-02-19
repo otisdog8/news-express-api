@@ -347,7 +347,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
             articles.push(newArticle)
         })
         return articles;
-    }}
+    }
 
     // Match to article objects
     let articleMatch = []
