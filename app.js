@@ -422,7 +422,6 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
 
     for (const category of valid_categories) {
         if (input[category]) {
-            console.log(category)
             result[category] = await result[category]
         }
     }
@@ -463,7 +462,7 @@ async function sendFormatted(email, data) {
 
         for (let i = 0; i < 3; i++) {
             const articleObject = data[key][i];
-            const article_title = articleObject["name"];
+            const article_title = articleObject["title"];
             const article_url = articleObject["link"];
             const article_content = articleObject["summary"];
 
