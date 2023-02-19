@@ -209,6 +209,9 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+// Title fuzzy matching setup
+const Fuse = require('fuse.js')
+
 // Function to get a subcomponent of newsletter
 async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country = "US", ncCacheTime = 4) {
     // Check exist in cache
@@ -244,11 +247,20 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     console.log(completion.data.choices[0])
 
     // Extract titles from completion
+    const options = {
+        includeScore: true,
+        keys: ["title"],
+    }
+
+    const fuse = new Fuse(articleArr, options)
+
     let titles = []
     completion.data.choices[0].text.split('\n').forEach((str) => {
         if (str.startsWith("1") || str.startsWith("2") || str.startsWith("3")) {
             try {
-                titles.push(str.split(":").slice(1).join(":").trim());
+                const searchStr = str.split(":").slice(1).join(":").trim();
+                const result = fuse.search(searchStr)[0].item
+                titles.push(result)
             } catch {
 
             }
@@ -343,11 +355,20 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     console.log(completion.data.choices[0])
 
     // Extract titles from completion
+    const options = {
+        includeScore: true,
+        keys: ["title"],
+    }
+
+    const fuse = new Fuse(articleArr, options)
+
     let titles = []
     completion.data.choices[0].text.split('\n').forEach((str) => {
         if (str.startsWith("1") || str.startsWith("2") || str.startsWith("3")) {
             try {
-                titles.push(str.split(":").slice(1).join(":").trim());
+                const searchStr = str.split(":").slice(1).join(":").trim();
+                const result = fuse.search(searchStr)[0].item
+                titles.push(result)
             } catch {
 
             }
