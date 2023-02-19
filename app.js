@@ -310,7 +310,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedCategory", cacheTime, category)
     if (cachedItem !== null) {
-        //return cachedItem.slice(0, 3)
+        //return cachedItem
     }
 
     // Newscatcher API
@@ -336,13 +336,22 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
         model: "text-davinci-003", prompt: prompt, max_tokens: 256,
     });
 
+    console.log(completion.data.choices[0])
+
     // Extract titles from completion
     let titles = []
     completion.data.choices[0].text.split('\n').forEach((str) => {
-        if (str.startsWith("1:") || str.startsWith("2:") || str.startsWith("3:")) {
-            titles.push(str.split(":")[1].trim());
+        if (str.startsWith("1") || str.startsWith("2") || str.startsWith("3")) {
+            try {
+                titles.push(str.split(":")[1].trim());
+            }
+            catch {
+
+            }
         }
     });
+
+    console.log(titles)
 
     if (titles.length === 0) {
         let articles = [];
