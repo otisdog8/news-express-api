@@ -246,8 +246,7 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
 
     // Extract titles from completion
     const options = {
-        includeScore: true,
-        keys: ["title"],
+        includeScore: true, keys: ["title"],
     }
 
     const fuse = new Fuse(articleArr, options)
@@ -337,8 +336,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
 
     // Extract titles from completion
     const options = {
-        includeScore: true,
-        keys: ["title"],
+        includeScore: true, keys: ["title"],
     }
 
     const fuse = new Fuse(articleArr, options)
@@ -514,9 +512,34 @@ async function sendAll() {
 
 }
 
+let jobStarted = false;
+
 // Handle sending periodically
 async function handleSendingPeriodically() {
+    if (jobStarted) {
+        return
+    }
+    jobStarted = true;
+    // Set the time for Eastern Time
+    const hour = 14;
+    const now = Date.now();
+    const todayTime = now.setHours(0,0,0,0) + 10000 * 60 * 60 * hour;
+    const targetTime = now <= todayTime ? todayTime : todayTime + 10000 * 60 * 60 * 24;
 
+    const delay = targetTime - Date.now();
+
+    // If the delay is negative, the target time has already passed for today,
+    const nextDelay = delay < 0 ? delay + 24 * 60 * 60 * 1000 : delay;
+
+    const sendTimer = async () => {
+        await sendAll();
+        while (true) {
+            await new Promise(r => setTimeout(r, 24 * 60 * 60 * 1000));
+            await sendAll();
+        }
+    }
+    // Call sendAll() after the calculated delay
+    setTimeout(sendTimer, nextDelay);
 }
 
 //takes in the user's email, interests from the JSON, store that information in the mongoDB, then generate for immediate use and recurring use
@@ -526,7 +549,7 @@ async function handleEmailInterests(data) {
     const filter = {
         email: data.email
     }
-    await dbCollection.updateOne(filter, { $set : data }, {
+    await dbCollection.updateOne(filter, {$set: data}, {
         upsert: true
     })
 
@@ -609,6 +632,7 @@ app.post('/generate_feed', async (req, res) => {
 })
 
 
-app.listen(port, () => {
+app.listen(port, async () => {
+    await handleSendingPeriodically()
     console.log(`Example app listening on port ${port}`)
 })
