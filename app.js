@@ -454,7 +454,7 @@ async function sendFormatted(email, data) {
     // TODO: Implement conveting the data to html
     let result = "";
 
-    const prefix = "<div style='text-align: center; background-color: rgb(221, 212, 242);'> <div class='box' style='position: relative;background:#f8f8f8;width: 90%;max-width: 900px;padding: 2em;margin: 1.5em aut;border: 3px solid rgba(0, 0, 0, 0.08);'><div class='newsletterContent' id='newsLetterBox'><h1 style='text-align:center; font-size:60px; tex-transform:uppercase; color:#222; letter-spacing:1px;font-family:'Playfair Display', serif; font-weight:400;'>MyNewsWire Newsletter</h1><HR style='border-top: 1px dashed;'>"
+    const prefix = "<div style='text-align: center; background-color: rgb(211, 211, 211);'> <div class='box' style='position: relative;background:#f8f8f8;width: 90%;max-width: 900px;padding: 2em;margin: 1.5em aut;border: 3px solid rgba(0, 0, 0, 0.08);'><div class='newsletterContent' id='newsLetterBox'><h1 style='text-align:center; font-size:60px; tex-transform:uppercase; color:#222; letter-spacing:1px;font-family:'Playfair Display', serif; font-weight:400;'>MyNewsWire Newsletter</h1><HR style='border-top: 1px dashed;'>"
     result = result.concat(prefix);
 
     for (const key in data) {
