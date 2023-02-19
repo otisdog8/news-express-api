@@ -221,7 +221,6 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     const newscatcherData = await newscatcherGetKeyword(keyword, ncCacheTime, lang, country);
 
     // Collect a list of articles to group:
-    // TODO: Ensure summary is greater than some length
     let articleArr = []
     articleArr = newscatcherData.articles.filter((article) => {
         return article.summary !== null && article.summary.length >= 250 && article.summary.length <= 1000
@@ -239,16 +238,14 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     prompt += "\n" + promptBase
     // GPT3 processing
     const completion = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt: prompt,
+        model: "text-davinci-003", prompt: prompt, max_tokens: 256,
     });
-
 
     // Extract titles from completion
     let titles = []
     completion.data.choices[0].text.split('\n').forEach((str) => {
-        if (str.startsWith("1.") || str.startsWith("2.") || str.startsWith("3.")) {
-            titles.push(str.trim());
+        if (str.startsWith("1") || str.startsWith("2") || str.startsWith("3")) {
+            titles.push(str.split(":")[1].trim());
         }
     });
 
@@ -270,10 +267,8 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
         summarizePrompt += article.summary
         summarizePrompt += "\nSummary:\n"
         articleCoroArr.push(openai.createCompletion({
-            model: "text-davinci-003",
-            prompt: summarizePrompt,
+            model: "text-davinci-003", prompt: summarizePrompt, max_tokens: 256,
         }));
-
     }
 
     for (let i = 1; i < articleMatch.length; i++) {
@@ -298,20 +293,70 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedCategory", cacheTime, category)
     if (cachedItem !== null) {
-        return cachedItem.slice(0, 3)
+        //return cachedItem.slice(0, 3)
     }
 
     // Newscatcher API
     const newscatcherData = await newscatcherGetCategory(category, ncCacheTime, lang, country);
 
+    let articleArr = []
+    articleArr = newscatcherData.articles.filter((article) => {
+        return article.summary !== null && article.summary.length >= 250 && article.summary.length <= 1000
+    })
+    articleArr = articleArr.slice(0, Math.min(articleArr.length, 50))
+
+    const promptBase = "Pick only 3 the most relevant articles, highlighting current events, politics, and breaking news. Do not choose any articles related to sports, and ensure that the articles are not repetitive. Do not include duplicates or articles that likely refer to the same event:\n"
+    let prompt = promptBase
+    let cnt = 1
+    articleArr.forEach((article) => {
+        prompt += cnt.toString() + ": " + article.title + "\n"
+        cnt += 1;
+    })
+
+    prompt += "\n" + promptBase
     // GPT3 processing
-    // TODO: GPT Processing Pipeline
+    const completion = await openai.createCompletion({
+        model: "text-davinci-003", prompt: prompt, max_tokens: 256,
+    });
+
+    // Extract titles from completion
+    let titles = []
+    completion.data.choices[0].text.split('\n').forEach((str) => {
+        console.log(str)
+        if (str.startsWith("1") || str.startsWith("2") || str.startsWith("3")) {
+            titles.push(str.split(":")[1].trim());
+        }
+    });
+
+    // Match to article objects
+    let articleMatch = []
+    for (const title of titles) {
+        for (let i = 0; i < articleArr.length; i++) {
+            if (articleArr[i].title.trim() === title.trim()) {
+                articleMatch.push(articleArr[i])
+                break
+            }
+        }
+    }
+
+    let articleCoroArr = []
+    // Process summaries with gpt3
+    for (const article of articleMatch) {
+        let summarizePrompt = "Summarize the following in 250 words or less: \n"
+        summarizePrompt += article.summary
+        summarizePrompt += "\nSummary:\n"
+        articleCoroArr.push(openai.createCompletion({
+            model: "text-davinci-003", prompt: summarizePrompt, max_tokens: 256,
+        }));
+    }
+
+    for (let i = 1; i < articleMatch.length; i++) {
+        articleMatch[i].summary = (await articleCoroArr[i]).data.choices[0].text
+    }
 
     // Format nicely and return
-
-
     let articles = [];
-    newscatcherData.articles.forEach((article) => {
+    articleMatch.forEach((article) => {
         let newArticle = {
             title: article.title, link: article.link, summary: article.summary
         }
