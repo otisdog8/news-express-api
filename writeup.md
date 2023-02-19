@@ -8,14 +8,14 @@ mynewswire allows users to get customized news in one click. Users can select th
 
 ## How we built it
 ### Front end
-The web application, built using React JS, uses reusable components that are rendered conditionally. It sends data submitted from the form to the backend using a REST API end-point and waits for the news feed results to be returned as a JSON file, which is dynamically rendered on the web page. Even the formatting for the email was done with a combination of HTML and CSS.
+The web application, built using **React JS**, uses reusable components that are rendered conditionally. It sends data submitted from the form to the backend using a **REST API** end-point and waits for the news feed results to be returned as a **JSON** file, which is dynamically rendered on the web page. Even the formatting for the email was done with a combination of **HTML** and **CSS**.
 
 ### Back end
-We used JavaScript+Express for the core of our API. For hosting, we used a Google Compute Engine VPS on Debian 11 with Nginx acting as a reverse proxy and handling SSL for the front end. We used Cloudflare to manage DNS and SSL for the backend API. We used NewsCatcher’s API to collect news articles from the last 24 hours. Once we got results from NewsCatcher, we used GPT3 to curate the articles (reduce ~50 articles to 3) and also shorten and improve the summary provided by NewsCatcher. 
+We used **JavaScript+Express** for the core of our API. For hosting, we used a **Google Compute Engine VPS** on **Debian 11** with **Nginx** acting as a reverse proxy and handling SSL for the front end. We used **Cloudflare** to manage DNS and SSL for the backend API. We used **NewsCatcher’s API** to collect news articles from the last 24 hours. Once we got results from **NewsCatcher**, we used **GPT3** to curate the articles (reduce ~50 articles to 3) and also shorten and improve the summary provided by **NewsCatcher**. 
 
-Because these API calls can take a long time and be expensive, we used MongoDB Atlas to cache the results from these APIs for about four hours. We also used MongoDB to store user preferences for our newsletter and to handle API Key rotation for newscatcher (see below). 
+Because these API calls can take a long time and be expensive, we used **MongoDB Atlas** to cache the results from these APIs for about four hours. We also used **MongoDB** to store user preferences for our newsletter and to handle API Key rotation for newscatcher (see below). 
 
-Our backend also uses Twilio SendGrid to handle sending emails. To send an email, the backend first fetches user interests from MongoDB, generates a javascript object with a personalized newsfeed, converts the newsfeed to HTML, and finally sends a nicely formatted email to the user. 
+Our backend also uses **Twilio SendGrid** to handle sending emails. To send an email, the backend first fetches user interests from **MongoDB**, generates a **JavaScript** object with a personalized newsfeed, converts the newsfeed to **HTML**, and finally sends a nicely formatted email to the user. 
 
 ## Challenges we ran into
 Early on, we ran into an issue with newscatcher, the API we would use. The site said we had 10k free API calls, but we only had 50 (per API key). So, we had to implement aggressive caching to minimize our API usage. Later on in development, we used MongoDB Atlas to store a series of API keys as well as the number of remaining API calls for that API key and queried the database whenever we needed a key. The API also had a one-call-per-second rate limit, so we needed to add a wrapper function that queued calls to keep within the limit.
