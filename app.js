@@ -430,6 +430,7 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
 
     for (const category of valid_categories) {
         if (input[category]) {
+            console.log(category)
             result[category] = await result[category]
         }
     }
