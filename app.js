@@ -247,7 +247,11 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     let titles = []
     completion.data.choices[0].text.split('\n').forEach((str) => {
         if (str.startsWith("1") || str.startsWith("2") || str.startsWith("3")) {
-            titles.push(str.split(":")[1].trim());
+            try {
+                titles.push(str.split(":").slice(1).join(":").trim());
+            } catch {
+
+            }
         }
     });
 
@@ -343,9 +347,8 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     completion.data.choices[0].text.split('\n').forEach((str) => {
         if (str.startsWith("1") || str.startsWith("2") || str.startsWith("3")) {
             try {
-                titles.push(str.split(":")[1].trim());
-            }
-            catch {
+                titles.push(str.split(":").slice(1).join(":").trim());
+            } catch {
 
             }
         }
@@ -376,7 +379,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
         }
     }
 
-    console.log(articlesMatch)
+    console.log(articleMatch)
 
     let articleCoroArr = []
     // Process summaries with gpt3
