@@ -461,7 +461,34 @@ async function sendMail(email, html) {
 
 async function sendFormatted(email, data) {
     // TODO: Implement conveting the data to html
+    let result = "";
 
+    const prefix = "<div style='text-align: center; background-color: rgb(221, 212, 242);'> <div class='box' style='position: relative;background:#f8f8f8;width: 90%;max-width: 900px;padding: 2em;margin: 1.5em aut;border: 3px solid rgba(0, 0, 0, 0.08);'><div class='newsletterContent' id='newsLetterBox'><h1 style='text-align:center; font-size:60px; tex-transform:uppercase; color:#222; letter-spacing:1px;font-family:'Playfair Display', serif; font-weight:400;'>Newsletter</h1><HR style='border-top: 1px dashed;'>"
+    result = result.concat(prefix);
+
+    for (const key in data) {
+        let content = `<div class='article' style='padding-bottom: 10px;'><HR style='border-top: 1px dashed;'><h3 style='text-align: left !important; margin-top: 0px; margin-bottom: -30px; font-size: 30px !important; text-transform: none !important; font-family:' Playfair Display', serif; font-weight:500; margin-bottom: 15px;' class='category'>Today in ${key}<span id='technology'></span></h3>`
+
+        for (let i = 0; i < 3; i++) {
+            const articleObject = jsonObject[key][i];
+            const article_title = articleObject["name"];
+            const article_url = articleObject["link"];
+            const article_content = articleObject["summary"];
+
+            const articleToAdd = `<h2 style='text-align:center; font-size:40px;text-transform:uppercase; color:#222; letter-spacing:1px;font-family:' Playfair Display', serif; font-weight:400; margin-bottom: 15px;'><a style='color: navy; text-decoration: none; border-bottom: 3px dotted navy;' href=${article_url}>${article_title}</a></h2><p>${article_content}</p>`
+
+            content = content.concat(articleToAdd);
+
+        }
+        result = result.concat(content);
+        const endDiv = "</div>";
+        content = content.concat(endDiv);
+    }
+
+    const suffix = "</div><HR style='border-top: 1px dashed;'><nav class='navbar' style='align-items: center; justify-content: space-between;background-color: rgb(159, 159, 190); height: 30px;'><ul style='padding-left: -30px; margin-left: -60px;'><li style='list-style-type: none; padding-left: 10px;display:inline;'><a style='color: navy; text-decoration: none; border-bottom: 3px dotted navy;' href='url'>About us</a></li><li style='list-style-type: none; padding-left: 10px;display:inline;'><a style='color: navy; text-decoration: none; border-bottom: 3px dotted navy;' href='url'>Subscription setting</a></li><li style='list-style-type: none; padding-left: 10px;display:inline;'><a style='color: navy; text-decoration: none; border-bottom: 3px dotted navy;' href='https://hackapi.rooty.dev/unsubscribe'>Unsubscribe</a></li></ul></nav></div></div>"
+    result = result.concat(suffix);
+
+    await sendMail(email, result);
 }
 
 // Send the email for a particular user if it works
@@ -510,7 +537,7 @@ async function handleEmailInterests(data) {
         upsert: true
     })
 
-
+    await sendOne(data.email)
 }
 
 // Stores email-associated interest data
