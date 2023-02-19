@@ -4,7 +4,7 @@ Many of us are very interested in news, politics, and journalism. We realized th
 
 ## What it does
 ---
-MyNewsWire allows you to get relevant news on topics you like that go beyond just a Google search. It allows users to get customized news in one click. Users can select their location and interests to get the most recent news, and they can subscribe to our email newsletter for a daily dose of customized news feeds.
+MyNewsWire allows you to get relevant news on topics you like that go beyond just a Google search. It allows users to get customized news in one click. Users can select their location and interests to get the most recent news and subscribe to our email newsletter for a daily dose of customized news feeds.
 
 ## How we built it
 ---
@@ -20,7 +20,7 @@ Our backend also uses **Twilio SendGrid** to handle sending emails. To send an e
 
 ## Challenges we ran into
 ---
-Early on, we ran into an issue with newscatcher, the API we would use. The site said we had 10k free API calls, but it turns out we only had 50 (per API key). So, we had to implement aggressive caching to minimize our API usage. Later on in development, we used MongoDB Atlas to store a series of API keys as well as the number of remaining API calls for that API key and queried the database whenever we needed a key, which allowed us to increase the number of API calls we could make without too much manual intervention. The API also had a one-call-per-second rate limit, so we needed to add a wrapper function that queued calls to keep within the limit, using async.
+Early on, we ran into an issue with newscatcher, the API we would use. The site said we had 10k free API calls, but it turns out we only had 50 (per API key). So, we had to implement aggressive caching to minimize our API usage. Later on in development, we used MongoDB Atlas to store a series of API keys as well as the number of remaining API calls for that API key and queried the database whenever we needed a key, which allowed us to increase the number of API calls we could make without too much manual intervention. The API also had a one-call-per-second rate limit, so we needed to add a wrapper function that queued calls to keep within the limit using async.
 
 Another challenge was that GPT3 API calls take a long time to run, leading to long waiting times on requests. To resolve this, we added caching to the GPT3 component and used async/await to call the API multiple times simultaneously. Although OpenAI also has a similar rate limit to newscatcher (60 requests per second), it calculates this over the whole minute, so we could burst up to about 40 requests at one time and wait for them all to complete. 
 
@@ -34,7 +34,7 @@ We collaborated extensively and learned from each other’s strengths. Some team
 
 ## What we learned
 ---
-As this was our first hackathon, we learned several valuable lessons that can be applied to various aspects of our lives. We quickly realized that collaboration is crucial to success and that effective communication and teamwork are essential to creating something impactful. We also learned the importance of time management, prioritizing tasks, and delegating responsibilities to ensure that everything was completed on time. The hackathon environment also sparked our creativity, and we discovered that thinking outside the box and coming up with innovative solutions to problems were crucial to success. Overall, our first hackathon was an enriching experience, and we look forward to applying these lessons to future projects and challenges.
+As this was our first hackathon, we learned several lessons that could apply to future hackathons. We realized that collaboration is crucial to success and that effective communication and teamwork are essential to creating a successful hack. Having only 36 hours working in a team 4 posed a significant challenge - getting relevant key tasks done in a timely manner and distributing the work efficiently was difficult. The hackathon environment also sparked our creativity, and we discovered that coming up with innovative solutions to crucial problems was crucial to success. Overall, our first hackathon was an enjoyable experience, and we look forward to applying these lessons to future projects and hackathons.
 
 From a technical perspective, we all improved our abilities to work on various parts of the MERN stack and with JavaScript and APIs in general. We also improved our skills in Git and GitHub. Lastly, we learned a great deal about how to work around usage limitations in APIs, which were common as we primarily used free trials.
 
