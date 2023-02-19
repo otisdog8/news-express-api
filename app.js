@@ -480,7 +480,7 @@ async function sendFormatted(email, data) {
     const suffix = "</div><HR style='border-top: 1px dashed;'><nav class='navbar' style='align-items: center; justify-content: space-between;background-color: rgb(159, 159, 190); height: 30px;'><ul style='padding-left: -30px; margin-left: -60px;'><li style='list-style-type: none; padding-left: 10px;display:inline;'><a style='color: navy; text-decoration: none; border-bottom: 3px dotted navy;' href='url'>About us</a></li><li style='list-style-type: none; padding-left: 10px;display:inline;'><a style='color: navy; text-decoration: none; border-bottom: 3px dotted navy;' href='url'>Subscription setting</a></li><li style='list-style-type: none; padding-left: 10px;display:inline;'><a style='color: navy; text-decoration: none; border-bottom: 3px dotted navy;' href='https://hackapi.rooty.dev/unsubscribe'>Unsubscribe</a></li></ul></nav></div></div>"
     result = result.concat(suffix);
 
-    //await sendMail(email, result);
+    await sendMail(email, result);
 }
 
 // Send the email for a particular user if it works
@@ -586,6 +586,7 @@ app.post('/generate_feed', async (req, res) => {
         const data = await getNewsDataForApi(req.body)
 
         try {
+            await new Promise(r => setTimeout(r, 1000));
             res.json(data)
 
             if (req.body.email !== "") {
