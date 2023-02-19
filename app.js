@@ -533,7 +533,7 @@ async function handleEmailInterests(data) {
     const filter = {
         email: data.email
     }
-    await dbCollection.updateOne(filter, data, {
+    await dbCollection.updateOne(filter, { $set : data }, {
         upsert: true
     })
 
