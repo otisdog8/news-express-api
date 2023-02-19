@@ -582,28 +582,6 @@ app.get('/unsubscribe', async (req, res) => {
     }
 })
 
-app.get('/keyword_test', async (req, res) => {
-    try {
-        let keyword = req.query.keyword
-        let data = await newscatcherGetKeyword(keyword)
-        res.json(data);
-    } catch {
-        res.json({})
-    }
-
-})
-
-app.get('/category_test', async (req, res) => {
-    try {
-        let category = req.query.category
-        let data = await newscatcherGetCategory(category)
-        res.json(data);
-    } catch {
-        res.json({})
-    }
-
-})
-
 app.use(express.json());
 app.post('/generate_feed', async (req, res) => {
     // Check if email field exists
