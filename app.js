@@ -65,6 +65,11 @@ app.get('/add_newscatcher_key', async (req, res) => {
     try {
         let key = req.query.key
         let limit = req.query.limit
+        let auth = req.query.auth
+        if (auth !== process.env.APIROTATION_AUTH) {
+            res.send("Invalid API Key Auth")
+            return
+        }
         // Save key with limit to mongodb
         const database = client.db('apikeyrotate');
         const dbCollection = database.collection("newscatcher");
