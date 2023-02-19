@@ -470,7 +470,7 @@ async function sendFormatted(email, data) {
         let content = `<div class='article' style='padding-bottom: 10px;'><HR style='border-top: 1px dashed;'><h3 style='text-align: left !important; margin-top: 0px; margin-bottom: -30px; font-size: 30px !important; text-transform: none !important; font-family:' Playfair Display', serif; font-weight:500; margin-bottom: 15px;' class='category'>Today in ${key}<span id='technology'></span></h3>`
 
         for (let i = 0; i < 3; i++) {
-            const articleObject = jsonObject[key][i];
+            const articleObject = data[key][i];
             const article_title = articleObject["name"];
             const article_url = articleObject["link"];
             const article_content = articleObject["summary"];
