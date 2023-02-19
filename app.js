@@ -467,7 +467,7 @@ async function sendFormatted(email, data) {
             const article_url = articleObject["link"];
             const article_content = articleObject["summary"];
 
-            const articleToAdd = `<h2 style='text-align:center; font-size:40px;text-transform:uppercase; color:#222; letter-spacing:1px;font-family:' Playfair Display', serif; font-weight:400; margin-bottom: 15px;'><a style='color: navy; text-decoration: none; border-bottom: 3px dotted navy;' href=${article_url}>${article_title}</a></h2><p>${article_content}</p>`
+            const articleToAdd = `<h2 style='text-align:center; font-size:25px;text-transform:uppercase; color:#222; letter-spacing:1px;font-family:' Playfair Display', serif; font-weight:400; margin-bottom: 15px;'><a style='color: navy; text-decoration: none; border-bottom: 3px dotted navy;' href=${article_url}>${article_title}</a></h2><p>${article_content}</p>`
 
             content = content.concat(articleToAdd);
 
