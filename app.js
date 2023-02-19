@@ -251,7 +251,7 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
 
     if (titles.length === 0) {
         let articles = [];
-        newscatcherData.articles.slice(0, Math.min(3, newscatcherData.articles.length)).forEach((article) => {
+        articleArr.slice(0, Math.min(3, articleArr.length)).forEach((article) => {
             let newArticle = {
                 title: article.title, link: article.link, summary: article.summary
             }
@@ -340,14 +340,14 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
 
     if (titles.length === 0) {
         let articles = [];
-        newscatcherData.articles.slice(0, Math.min(3, newscatcherData.articles.length)).forEach((article) => {
+        articleArr.slice(0, Math.min(3, articleArr.length)).forEach((article) => {
             let newArticle = {
                 title: article.title, link: article.link, summary: article.summary
             }
             articles.push(newArticle)
         })
         return articles;
-    }
+    }}
 
     // Match to article objects
     let articleMatch = []
