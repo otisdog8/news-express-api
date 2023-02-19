@@ -201,7 +201,7 @@ app.get('/', async (req, res) => {
 
 // TODO: OpenAI Processing pipeline
 // Openai setup thing
-/*
+
 const {Configuration, OpenAIApi} = require("openai");
 
 const configuration = new Configuration({
@@ -209,47 +209,80 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
- */
-
 // Function to get a subcomponent of newsletter
 async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country = "US", ncCacheTime = 4) {
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedKeyword", cacheTime, keyword)
     if (cachedItem !== null) {
-        return cachedItem.slice(0, 3)
+        //return cachedItem
     }
 
     // Newscatcher API
     const newscatcherData = await newscatcherGetKeyword(keyword, ncCacheTime, lang, country);
 
     // Collect a list of articles to group:
-    // TODO: trim to 50
+    // TODO: Ensure summary is greater than some length
+    let articleArr = []
+    articleArr = newscatcherData.articles.filter((article) => {
+        return article.summary !== null && article.summary.length >= 250 && article.summary.length <= 1000
+    })
+    articleArr = articleArr.slice(0, Math.min(articleArr.length, 50))
 
-
-    /*
-    prompt = ""
-    cnt = 1
-    newscatcherData.articles.forEach((article) => {
+    const promptBase = "Pick only 3 the most relevant articles, highlighting current events, politics, and breaking news. Do not choose any articles related to sports, and ensure that the articles are not repetitive. Do not include duplicates or articles that likely refer to the same event:\n"
+    let prompt = promptBase
+    let cnt = 1
+    articleArr.forEach((article) => {
         prompt += cnt.toString() + ": " + article.title + "\n"
         cnt += 1;
     })
 
-    prompt += "Above is a list of articles. Select the 3-5 most relevant articles, highlighting current events that would be interesting to a local. Do not include duplicates or articles that likely refer to the same event:\n"
+    prompt += "\n" + promptBase
     // GPT3 processing
     const completion = await openai.createCompletion({
         model: "text-davinci-003",
         prompt: prompt,
     });
 
-    completion.split('\n').forEach((str) => {
-        str.split
-    })
 
-     */
+    // Extract titles from completion
+    let titles = []
+    completion.data.choices[0].text.split('\n').forEach((str) => {
+        if (str.startsWith("1.") || str.startsWith("2.") || str.startsWith("3.")) {
+            titles.push(str.trim());
+        }
+    });
+
+    // Match to article objects
+    let articleMatch = []
+    for (const title of titles) {
+        for (let i = 0; i < articleArr.length; i++) {
+            if (articleArr[i].title.trim() === title.trim()) {
+                articleMatch.push(articleArr[i])
+                break
+            }
+        }
+    }
+
+    let articleCoroArr = []
+    // Process summaries with gpt3
+    for (const article of articleMatch) {
+        let summarizePrompt = "Summarize the following in 250 words or less: \n"
+        summarizePrompt += article.summary
+        summarizePrompt += "\nSummary:\n"
+        articleCoroArr.push(openai.createCompletion({
+            model: "text-davinci-003",
+            prompt: summarizePrompt,
+        }));
+
+    }
+
+    for (let i = 1; i < articleMatch.length; i++) {
+        articleMatch[i].summary = (await articleCoroArr[i]).data.choices[0].text
+    }
 
     // Format nicely and return
     let articles = [];
-    newscatcherData.articles.forEach((article) => {
+    articleMatch.forEach((article) => {
         let newArticle = {
             title: article.title, link: article.link, summary: article.summary
         }
@@ -258,7 +291,7 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
 
     await refreshCacheRecord("processedKeyword", articles, keyword)
 
-    return articles.slice(0, 3);
+    return articles;
 }
 
 async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country = "US", ncCacheTime = 4) {
@@ -438,17 +471,21 @@ app.post('/generate_feed', async (req, res) => {
     try {
         const data = await getNewsDataForApi(req.body)
 
-        res.json(data)
+        try {
+            res.json(data)
 
-        if (req.body.email !== "") {
-            const emailFormat = /^[a-zA-Z0-9_.+]+(?<!^[0-9]*)@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-            if (req.body.email.match((emailFormat))) {
-                try {
-                    await handleEmailInterests(req.body)
-                } catch (error) {
-                    console.log("Error in email send: " + error)
+            if (req.body.email !== "") {
+                const emailFormat = /^[a-zA-Z0-9_.+]+(?<!^[0-9]*)@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+                if (req.body.email.match((emailFormat))) {
+                    try {
+                        await handleEmailInterests(req.body)
+                    } catch (error) {
+                        console.log("Error in email send: " + error)
+                    }
                 }
             }
+        } catch (err) {
+            console.log("Error in email code: " + err)
         }
     } catch {
         res.json({})
