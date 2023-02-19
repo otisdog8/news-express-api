@@ -322,7 +322,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     })
     articleArr = articleArr.slice(0, Math.min(articleArr.length, 50))
 
-    const promptBase = "Pick only 3 the most relevant articles, highlighting current events, politics, and breaking news. Do not choose any articles related to sports, and ensure that the articles are not repetitive. Do not include duplicates or articles that likely refer to the same event:\n"
+    const promptBase = "Pick only 3 the most relevant articles, highlighting current events. Ensure that the articles are not repetitive. Do not include duplicates or articles that likely refer to the same event:\n"
     let prompt = promptBase
     let cnt = 1
     articleArr.forEach((article) => {
@@ -364,6 +364,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
         return articles;
     }
 
+
     // Match to article objects
     let articleMatch = []
     for (const title of titles) {
@@ -374,6 +375,8 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
             }
         }
     }
+
+    console.log(articlesMatch)
 
     let articleCoroArr = []
     // Process summaries with gpt3
