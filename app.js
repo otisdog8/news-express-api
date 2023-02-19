@@ -526,7 +526,7 @@ async function handleSendingPeriodically() {
     }
     jobStarted = true;
     // Set the time for Eastern Time
-    const targetTime = new Date().setUTCHours(11, 22, 0, 0);
+    const targetTime = new Date().setUTCHours(19, 0, 0, 0);
 
     const delay = targetTime - Date.now();
 
