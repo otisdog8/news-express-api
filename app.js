@@ -217,7 +217,7 @@ async function getNewsDataKeyword(keyword, cacheTime = 4, lang = "en", country =
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedKeyword", cacheTime, keyword)
     if (cachedItem !== null) {
-        //return cachedItem
+        return cachedItem
     }
 
     // Newscatcher API
@@ -313,7 +313,7 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
     // Check exist in cache
     const cachedItem = await getCachedRecord("processedCategory", cacheTime, category)
     if (cachedItem !== null) {
-        //return cachedItem
+        return cachedItem
     }
 
     // Newscatcher API
