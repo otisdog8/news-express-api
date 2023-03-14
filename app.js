@@ -377,13 +377,13 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
         let summarizePrompt = "Summarize the following in 250 words or less: \n"
         summarizePrompt += article.summary
         summarizePrompt += "\nSummary:\n"
-        articleCoroArr.push(await openai.createCompletion({
+        articleCoroArr.push(openai.createCompletion({
             model: "text-davinci-003", prompt: summarizePrompt, max_tokens: 256,
         }));
     }
 
     for (let i = 1; i < articleMatch.length; i++) {
-        articleMatch[i].summary = (articleCoroArr[i]).data.choices[0].text
+        articleMatch[i].summary = (await articleCoroArr[i]).data.choices[0].text
     }
 
     // Format nicely and return
@@ -405,8 +405,6 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
     let result = {}
 
     const kwOptions = ["location", "interest1", "interest2", "interest3"]
-
-    const start = Date.now();
 
     for (const option of kwOptions) {
         if (input[option] !== "") {
@@ -432,9 +430,6 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
         }
     }
 
-    const end = Date.now()
-
-    console.log(`Execution time: ${end - start} ms for input ${input}`);
 
     return result
 }
