@@ -377,13 +377,13 @@ async function getNewsDataCategory(category, cacheTime = 4, lang = "en", country
         let summarizePrompt = "Summarize the following in 250 words or less: \n"
         summarizePrompt += article.summary
         summarizePrompt += "\nSummary:\n"
-        articleCoroArr.push(openai.createCompletion({
+        articleCoroArr.push(await openai.createCompletion({
             model: "text-davinci-003", prompt: summarizePrompt, max_tokens: 256,
         }));
     }
 
     for (let i = 1; i < articleMatch.length; i++) {
-        articleMatch[i].summary = (await articleCoroArr[i]).data.choices[0].text
+        articleMatch[i].summary = (articleCoroArr[i]).data.choices[0].text
     }
 
     // Format nicely and return
