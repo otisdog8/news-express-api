@@ -406,6 +406,8 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
 
     const kwOptions = ["location", "interest1", "interest2", "interest3"]
 
+    const start = Date.now();
+
     for (const option of kwOptions) {
         if (input[option] !== "") {
             result[input[option]] = getNewsDataKeyword(input[option], cacheTime, lang, country)
@@ -430,6 +432,9 @@ async function getNewsDataForApi(input, cacheTime = 4, lang = "en", country = "U
         }
     }
 
+    const end = Date.now()
+
+    console.log(`Execution time: ${end - start} ms for input ${input}`);
 
     return result
 }
